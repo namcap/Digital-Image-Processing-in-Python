@@ -57,18 +57,17 @@ if __name__=="__main__":
             #Extract low-frequency components
             DCT_L[i:i+8,j:j+8]=DCT[i:i+8,j:j+8]*mask
             iDCT[i:i+8,j:j+8]=idct2(DCT_L[i:i+8,j:j+8])
-    M=np.maximum(20*np.log(abs(DCT)),1e-100)
-    N=np.maximum(20*np.log(abs(DCT_L)),1e-100)
-
+    M=20*np.log(abs(DCT))
+    N=20*np.log(abs(DCT_L))
     
     #Show results
 	#The 'interpolation="none"' makes pyplot display the image pixel by pixel
     plt.subplot(221),plt.imshow(image, cmap = 'gray',interpolation="none")
     plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-    plt.subplot(222),plt.imshow(M, cmap = 'gray',interpolation="none")
+    plt.subplot(222),plt.imshow(np.maximum(M,-200), cmap = 'gray',interpolation="none")
     plt.title('Magnitude Spectrum (8x8 DCT)'), plt.xticks([]), plt.yticks([])
     plt.subplot(223),plt.imshow(iDCT, cmap = 'gray',interpolation="none")
     plt.title('Inverse Transformation (8x8 DCT)'), plt.xticks([]), plt.yticks([])
-    plt.subplot(224),plt.imshow(N, cmap = 'gray',interpolation="none")
+    plt.subplot(224),plt.imshow(np.maximum(N,-200), cmap = 'gray',interpolation="none")
     plt.title('Magnitude Spectrum (8x8 DCT)\nLow-frequency components'), plt.xticks([]), plt.yticks([])
     plt.show()
