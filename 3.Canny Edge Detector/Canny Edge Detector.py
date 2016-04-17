@@ -5,18 +5,27 @@ def main():
     global my_stack,image,w,h,smoothed,gradient,M,M1
     class my_stack:
 
-        def __init__(self,size=1):
-            self.__size=size
+        def __init__(self,size=1,max_size=-1):
+            self.__size=size if 0<size else 1
+            self.__max_size=max_size
             self.__index=0
-            self.__data=[None]*size
+            self.__data=[None]*self.__size
 
         def __double_size(self):
-            self.__data+=[None]*self.__size
+            if 0<self.__max_size<2*self.__size:
+                self.__data+=[None]*(self.__max_size-self.__size)
+                self.__size=self.__max_size
+            else:
+                self.__data+=[None]*self.__size
+                self.__size*=2
 
         def push(self,ele):
             if (self.__size-1<self.__index):
                 self.__double_size()
-            self.__data[self.__index]=ele
+            try:
+                self.__data[self.__index]=ele #will throw an exception if __double_size() fails
+            except:
+                raise
             self.__index+=1
 
         def pop(self):
@@ -117,37 +126,42 @@ def main():
 
 def cal(VH,VL):
     #Double threshold
-    global M1,strong,weak,output
+    global M1,strong,weak,output,stack
     strong=VH<=M1
     weak=(VL<=M1)*(M1<VH)
 
     #Edge tracking
     temp=np.array(weak)
     output=np.array(strong)
-    stack=my_stack(temp.sum())
+    try:
+        stack
+    except NameError:
+        stack=my_stack(size=temp.sum(),max_size=w*h)
     for i in range(1,h):
         for j in range(1,w):
             if output[i][j]:
                 for l in [(i-1,j-1),(i,j-1),(i+1,j-1),(i+1,j),(i+1,j+1),(i,j+1),(i-1,j+1),(i-1,j)]:
                     try:
-                        if weak[l]:
-                            output[l]=True
-                            weak[l]=False
-                            stack.push(l)
+                        weak[l]
                     except IndexError:
                         continue
+                    if weak[l]:
+                        output[l]=True
+                        weak[l]=False
+                        stack.push(l)
     while not stack.is_empty():
         l=stack.pop()
         i=l[0]
         j=l[1]
         for l in [(i-1,j-1),(i,j-1),(i+1,j-1),(i+1,j),(i+1,j+1),(i,j+1),(i-1,j+1),(i-1,j)]:
             try:
-                if weak[l]:
-                    output[l]=True
-                    weak[l]=False
-                    stack.push(l)
+                weak[l]
             except IndexError:
                 continue
+            if weak[l]:
+                output[l]=True
+                weak[l]=False
+                stack.push(l)
 
 def redraw():
     im5.set_data(strong*180+weak*60)
